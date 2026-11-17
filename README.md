@@ -237,6 +237,39 @@ python3 mgspec/sketch_reader.py design.sketch --lint
 如果设计侧愿意装一次插件，**插件直出 JSON 是零变形路径**——数据从 MasterGo 内存里直接读，
 不经过任何格式转换。完整插件在 [`mastergo-plugin/`](mastergo-plugin/)，普通账号就能加载。
 
+## 9. 设计变更追踪（把设计迭代变成可 review 的 diff）
+
+插件导出的 `spec.json` 是纯文本，提交进仓库后，**每次设计改版就是一次 json diff**。
+不用再问设计师"这版改了哪里"。
+
+```bash
+python3 mgspec/spec_diff.py designs/home.v1.spec.json designs/home.v2.spec.json
+```
+
+```
+新增 1 · 删除 0 · 属性变更 8
+  + 首页/Badge
+
+layer                     prop           old                new
+----------------------------------------------------------------------------
+首页/Card                 cornerRadius   12                 16
+首页/Card                 padding        t16 r20 b16 l16    t20 r24 b20 l24
+首页/Card                 gap            8                  12
+首页/Card/Title           fontSize       16                 18
+首页/Card/Title           lineHeight     22                 24
+```
+
+加 `--md` 出 markdown 表格，直接贴进 PR 描述或 CHANGELOG。
+有变更退出码 1，可以挂 CI 提醒"设计稿更新了，实现端还没跟"。
+
+按**图层路径**匹配，图层改名才算新增/删除，挪位置不会错配。
+
+推荐节奏：
+
+1. 插件导出 → `designs/<页面>.spec.json` → 提交
+2. 设计改版后重导一份 → `spec_diff` 出变更清单
+3. 只改清单里那几个数值，不用重看整份设计稿
+
 ## 自测
 
 ```bash

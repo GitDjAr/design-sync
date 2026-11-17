@@ -18,3 +18,5 @@ designs/*.mg
 designs/out/
 setup_repo.sh
 push.sh
+fixture.plugin.json
+fixture.plugin.v2.json
