@@ -1,0 +1,79 @@
+{
+  "source": "mastergo-plugin",
+  "kind": "plugin",
+  "generatedAt": "2026-11-17T03:40:00.000Z",
+  "meta": { "file": "demo", "page": "Page 1", "scope": "page" },
+  "pages": [
+    {
+      "page": "Page 1",
+      "nodes": [
+        {
+          "uid": "12:1",
+          "parent": null,
+          "depth": 0,
+          "path": "首页",
+          "name": "首页",
+          "type": "FRAME",
+          "frame": { "x": 0, "y": 0, "w": 375, "h": 400 },
+          "visible": true,
+          "opacity": 1
+        },
+        {
+          "uid": "12:2",
+          "parent": "12:1",
+          "depth": 1,
+          "path": "首页/Card",
+          "name": "Card",
+          "type": "FRAME",
+          "frame": { "x": 16, "y": 24, "w": 343, "h": 120 },
+          "visible": true,
+          "opacity": 1,
+          "cornerRadius": { "all": 12, "tl": 12, "tr": 12, "br": 12, "bl": 12 },
+          "layout": {
+            "axis": "row",
+            "padding": { "top": 16, "right": 20, "bottom": 16, "left": 20 },
+            "gap": 8,
+            "alignItems": "center",
+            "justifyContent": "flex-start"
+          },
+          "style": { "fills": [{ "color": "#FFFFFF", "type": "SOLID" }], "borders": [] },
+          "absoluteBoundingBox": { "x": 16, "y": 24, "w": 343, "h": 120 }
+        },
+        {
+          "uid": "12:3",
+          "parent": "12:2",
+          "depth": 2,
+          "path": "首页/Card/Title",
+          "name": "Title",
+          "type": "TEXT",
+          "frame": { "x": 20, "y": 16, "w": 120, "h": 22 },
+          "visible": true,
+          "opacity": 1,
+          "text": {
+            "string": "优惠券",
+            "fontFamily": "PingFangSC-Regular",
+            "fontSize": 16,
+            "lineHeight": 22,
+            "lineHeightAuto": false,
+            "letterSpacing": 0,
+            "textAlign": "center",
+            "fontWeight": "Regular"
+          }
+        },
+        {
+          "uid": "12:4",
+          "parent": "12:1",
+          "depth": 1,
+          "path": "首页/Avatar",
+          "name": "Avatar",
+          "type": "RECTANGLE",
+          "frame": { "x": 16, "y": 176, "w": 48, "h": 48 },
+          "visible": true,
+          "opacity": 1,
+          "cornerRadius": { "all": 24, "tl": 24, "tr": 24, "br": 24, "bl": 24 },
+          "visualPadding": { "left": 16, "top": 176, "right": 311, "bottom": 176 }
+        }
+      ]
+    }
+  ]
+}

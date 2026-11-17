@@ -1,0 +1,12 @@
+{
+  "name": "Design Spec Export",
+  "api": "1.0.0",
+  "main": "main.js",
+  "ui": "ui.html",
+  "menu": [
+    { "name": "导出当前页规格", "command": "page" },
+    { "name": "导出选中图层规格", "command": "selection" },
+    { "separator": true },
+    { "name": "导出当前页（含隐藏图层）", "command": "page-all" }
+  ]
+}

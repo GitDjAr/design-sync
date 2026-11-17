@@ -139,38 +139,28 @@ python3 MasterGo2Figma/pythonParser/mg_to_zip.py 你的文件.mg out.zip
 `out.zip` 里是一堆 JSON，字段名是 Figma 风格（`cornerRadius` / `paddingLeft` / `itemSpacing` / `fontSize`），
 本仓库的 `compare.py` 和 `server.py` 直接吃得下（`load_spec` 支持 `.json`）。
 
-## 6. 插件路线（想要最干净的数据就走这条）
+## 6. 插件路线（推荐，零变形）
 
-MasterGo 插件 API 与 Figma 高度同构，普通账号即可开发调试：
+**已经写好了，在 [`mastergo-plugin/`](mastergo-plugin/)。** 普通账号即可加载，不需要团队版。
 
-```js
-// main.js — 遍历当前页，导出规格 JSON
-const out = [];
-function walk(node) {
-  const rec = { id: node.id, name: node.name, type: node.type };
-  if ('cornerRadius' in node) rec.cornerRadius = node.cornerRadius;
-  if ('topLeftRadius' in node) rec.radii = [node.topLeftRadius, node.topRightRadius,
-                                           node.bottomRightRadius, node.bottomLeftRadius];
-  if (node.layoutMode) {
-    rec.layout = {
-      mode: node.layoutMode,
-      padding: [node.paddingTop, node.paddingRight, node.paddingBottom, node.paddingLeft],
-      gap: node.itemSpacing,
-    };
-  }
-  if (node.type === 'TEXT') {
-    rec.text = { characters: node.characters, fontSize: node.fontSize,
-                 lineHeight: node.lineHeight, letterSpacing: node.letterSpacing };
-  }
-  if ('absoluteBoundingBox' in node) rec.box = node.absoluteBoundingBox;
-  out.push(rec);
-  if ('children' in node) node.children.forEach(walk);
-}
-mg.currentPage.children.forEach(walk);
-mg.ui.postMessage({ type: 'spec', data: out });
+安装：
+
+1. MasterGo 打开任意设计文件 → 菜单 **插件 → 开发插件 → 创建/添加插件**
+2. 选 `mastergo-plugin/manifest.json`
+3. 面板里三个按钮：导出当前页 / 导出选中 / 含隐藏
+
+输出结构和 `sketch_reader.py` 完全一致，`compare.py` / `server.py` 零改动直接吃：
+
+```bash
+mv ~/Downloads/首页.spec.json designs/home.spec.json
+python3 mgspec/compare.py designs/home.spec.json page.computed.json
 ```
 
-`manifest.json` 里 `api` 必须是 `"1.0.0"`，否则加载不了。插件 → 开发插件 → 导入 manifest.json。
+面板内可以直接切「AI 文本」视图，复制粘贴给 AI；
+或「下载 .spec.json」落盘当版本基线（纯文本，可以提交进仓库）。
+
+细节见 [mastergo-plugin/README.md](mastergo-plugin/README.md)。
+
 
 ## 7. 落地上线顺序
 
@@ -245,7 +235,7 @@ python3 mgspec/sketch_reader.py design.sketch --lint
 ### 最稳的还是别转换
 
 如果设计侧愿意装一次插件，**插件直出 JSON 是零变形路径**——数据从 MasterGo 内存里直接读，
-不经过任何格式转换。代码在 [README 第 6 节](#6-插件路线想要最干净的数据就走这条)。
+不经过任何格式转换。完整插件在 [`mastergo-plugin/`](mastergo-plugin/)，普通账号就能加载。
 
 ## 自测
 

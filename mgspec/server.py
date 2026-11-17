@@ -55,9 +55,10 @@ def tool_design_spec(args):
     if args.get("page"):
         spec["pages"] = [p for p in spec["pages"] if p.get("page") == args["page"]]
     if args.get("format") == "text":
-        if spec.get("kind") == "sketch":
-            return sketch_reader.to_ai_text(spec)
-        return mg_reader.to_ai_text(spec)
+        # mg 有自己的一套字段，其余（sketch / 插件导出）结构一致，共用同一套渲染
+        if spec.get("kind") == "mg":
+            return mg_reader.to_ai_text(spec)
+        return sketch_reader.to_ai_text(spec)
     return json.dumps(spec, ensure_ascii=False, indent=1)
 
 
