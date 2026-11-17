@@ -1,0 +1,18 @@
+__pycache__/
+*.pyc
+*.pyo
+node_modules/
+.DS_Store
+
+# 自测产物（由 make_fixture.py 生成）
+fixture.sketch
+fixture.spec.json
+fixture.computed.json
+*.spec.json
+*.computed.json
+*.mg
+
+# 本地设计稿缓存
+designs/*.sketch
+designs/*.mg
+designs/out/
