@@ -9,15 +9,19 @@ python3 sketch_reader.py fixture.sketch -o fixture.spec.json
 python3 sketch_reader.py fixture.sketch --ai | head -6
 
 echo
-echo "== 2. compare =="
+echo "== 2. lint =="
+python3 sketch_reader.py fixture.sketch --lint | head -14
+
+echo
+echo "== 3. compare =="
 python3 compare.py fixture.spec.json fixture.computed.json | head -12
 
 echo
-echo "== 3. http server =="
+echo "== 4. http server =="
 python3 http_probe.py
 
 echo
-echo "== 4. mcp stdio =="
+echo "== 5. mcp stdio =="
 printf '%s\n%s\n%s\n' \
   '{"jsonrpc":"2.0","id":1,"method":"initialize"}' \
   '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \

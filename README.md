@@ -180,10 +180,77 @@ mg.ui.postMessage({ type: 'spec', data: out });
 4. 把 `compare.py` 挂进 CI，差异非 0 即失败。
 5. 设计 token 收敛：把反复出现的 12/16/20/24 提成变量，让实现端没有自由发挥空间。
 
+## 8. 「导 .sketch 会变形」是真的，但要看变的是什么
+
+MasterGo 官方自己就把取舍写在文档里了（[导入与导出](https://mastergo.com/help/getting-started/import-export.html)）：
+导出 Sketch 有两种格式，**必定丢一样东西**。
+
+| 导出选项 | 保留什么 | 丢什么 |
+|---|---|---|
+| 默认格式 | 组件 ↔ 实例的关联关系 | **实例覆盖**（颜色、文字、尺寸改过的都回到主组件原样） |
+| 保留实例覆盖 | 实例上的所有覆盖 | 组件关联（实例被展平成组） |
+
+所以"变形"分三档，只有第一档会影响我们：
+
+### A. 会影响取值的（必须防）
+**实例被展平 → 组尺寸按主组件原尺寸算，而不是覆盖后尺寸。**
+这时节点的 `frame` 是错的，靠几何反推的 `visualPadding` / `visualGap` 也跟着错。
+圆角、字号这类直接存在节点上的属性不受影响。
+
+→ 对策：如果设计稿大量用实例覆盖且覆盖里改了尺寸/间距，导出选**「保留实例覆盖」**；
+否则选**默认格式**（保住组件主尺寸）。两者都不能全信，见下面的体检。
+
+### B. 会让数值"看着对但排版错"的
+**字体没装 → Sketch 用 fallback 度量 → 文字节点宽度变 → 自动布局外框跟着变。**
+`fontSize` 数值不变，但占位尺寸不可信，`lineHeight` 可能被重算。
+
+→ 对策：装字体，或者只信 `fontSize`/`lineHeight` 数值，不信文字节点宽高。
+
+### C. 我们根本不关心的
+颜色精度、阴影/模糊、渐变手柄、布尔运算结果、矢量网络精度、蒙版模式、混合模式。
+这些在导出后一定会有偏差，但它们不在 `border-radius / padding / margin / font-size` 这条线上。
+
+### 结论
+
+| 用途 | 导 .sketch 行不行 |
+|---|---|
+| 取圆角、字号、行高 | 行，风险低 |
+| 取自动布局 padding / gap | 行，前提是实例没被展平 |
+| 从几何反推 margin | 有风险，实例展平的节点别信 |
+| 拿它当像素级视觉基准 | 不行，用截图回归 |
+
+### 自检：`--lint`
+
+```bash
+python3 mgspec/sketch_reader.py design.sketch --lint
+```
+
+输出统计 + 字体清单 + 风险项：
+
+```
+== stat ==
+  nodes / withRadius / withAutoLayout / withText / withVisualPadding / hidden
+== fonts ==
+  PingFangSC-Regular  x214  [本机缺失]
+== issues ==
+  - [四角不等] Card radius=12/12/0/0，实现端不要写简写
+  - [溢出] Button 左右 padding 合计 48 >= 宽度 40，子元素会被挤爆
+  - [间距缺失] List 有 8 个子节点但 gap=0，可能是导出丢了间距
+  - [字号缺失] Label fontSize=None，导出或字体样式绑定丢了
+  - [宽度塌陷] Title 宽度 12.0 < 字号 16，字体可能 fallback 了
+```
+
+体检通过再拿去生成代码；报「间距缺失」「溢出」「字号缺失」的节点，回 MasterGo 手工量一次。
+
+### 最稳的还是别转换
+
+如果设计侧愿意装一次插件，**插件直出 JSON 是零变形路径**——数据从 MasterGo 内存里直接读，
+不经过任何格式转换。代码在 [README 第 6 节](#6-插件路线想要最干净的数据就走这条)。
+
 ## 自测
 
 ```bash
 bash mgspec/selftest.sh
 ```
 
-会依次验证：样本生成 → 解析 → 对账 → HTTP 服务 → MCP stdio。
+会依次验证：样本生成 → 解析 → 导出体检 → 对账 → HTTP 服务 → MCP stdio。

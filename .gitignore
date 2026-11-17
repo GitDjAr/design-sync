@@ -16,3 +16,5 @@ fixture.computed.json
 designs/*.sketch
 designs/*.mg
 designs/out/
+setup_repo.sh
+push.sh
