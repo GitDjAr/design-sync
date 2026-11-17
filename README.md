@@ -270,6 +270,59 @@ layer                     prop           old                new
 2. 设计改版后重导一份 → `spec_diff` 出变更清单
 3. 只改清单里那几个数值，不用重看整份设计稿
 
+## 10. 现成工具与替代路径（装不上开发者模式时看这里）
+
+### 10.1 先试：插件市场里的现成插件（不需要开发者模式）
+
+MasterGo 插件工具栏 →「获得更多插件」→ 搜 **JSON导出** / **导出 JSON**。
+社区里有现成的图层 JSON 导出插件，装完选中图层点一下就把数据复制到剪贴板。
+[VTJ 的文档](https://github.com/samchen08/vtj.pro/blob/cc3bf46481084ac7720930e39f1934b3eb7333e2/docs/src/guide/meta.md) 就是按这个流程接的。
+
+拿到 JSON 后丢进 `designs/`，`compare.py` 能直接读（字段名对不上就在 `load_spec` 里加一层映射）。
+
+### 10.2 再试：AI Skill 走 token，不装插件
+
+[`jeasonstudio/mastergo-skills`](https://github.com/jeasonstudio/mastergo-skills) — 给 Cursor/Claude 用的 Agent Skill，
+直接解析 MasterGo 设计文件取 DSL，输出可读结构 + 完整 JSON + 设计 token。
+
+```bash
+npx skills add https://github.com/jeasonstudio/mastergo-skills
+```
+
+需要 MasterGo 个人访问令牌（个人设置 → 安全设置 → 个人访问令牌）。
+这条也是 MCP 那条路走不通时的降级——它拿 token 自己调后端，不依赖官方 MCP 的账号门槛。
+
+### 10.3 参考：插件当桥，MCP 在本地跑
+
+[`whwanyt/mastergo-mcp-plugin`](https://github.com/whwanyt/mastergo-mcp-plugin) — 插件 UI 走 WebSocket 连本地服务，
+本地暴露 `POST /mcp`，21 个 operation（读文档/读选区/查树/建节点/改样式）。架构值得抄：
+
+```
+外部 AI ──MCP──▶ 本地服务(:8787) ──WS──▶ 插件 UI ──▶ 插件主线程 ──▶ mg API
+```
+
+**它踩过的一个坑我们已经在 `mastergo-plugin/` 里修正了**：
+MasterGo 用的是 raw `parent.postMessage(data, '*')`，**不是** Figma 的 `{ pluginMessage }` 包装。
+
+### 10.4 自己写瘦客户端（官方 MCP 就是个 HTTP 客户端）
+
+`mastergo-magic-mcp` 的真实形态：带 `X-MG-UserAccessToken` header 打 MasterGo 后端接口。
+参考 [DeepWiki 上的 API Reference](https://deepwiki.com/mastergo-design/mastergo-magic-mcp/8-api-reference)。
+
+所以只要你能在个人设置里生成 token，就能自己写几十行脚本替代整个 MCP——不装插件、不用团队版。
+
+### 10.5 兜底：不依赖设计稿数据的方案
+
+| 工具 | 干什么 | 适合 |
+|---|---|---|
+| [`kosaki08/uimatch`](https://github.com/kosaki08/uimatch) | Figma 节点 vs Playwright 渲染，输出 Design Fidelity Score | 想要"总分"而不是逐属性清单 |
+| [`mizchi/vlmkit`](https://github.com/mizchi/vlmkit) | `check tokens` 查间距/圆角是否偏离设计尺度 | 没有设计稿、只有一套 token 规范 |
+| [`wuba/picasso`](https://github.com/wuba/picasso) | Sketch → HTML/小程序/RN，RestoreDSL 支持版本 diff | 设计侧愿意走 Sketch |
+| [`onmyway133/figma-cli`](https://github.com/onmyway133/figma-cli) | 本地 `.fig` 文件直解析，无网络无认证 | 能拿到 .fig 源文件 |
+| [`figma-extractor`](https://pypi.org/project/figma-extractor/) | `.fig` 批量提取 + 标注 | 同上，想要 python 生态 |
+
+这些解决的是"校验"，不解决"从 MasterGo 取数"。取数还得看 10.1~10.4。
+
 ## 自测
 
 ```bash

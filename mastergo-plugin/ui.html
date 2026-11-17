@@ -114,10 +114,9 @@
   }
 
   function send(payload) {
-    var msg = { pluginMessage: payload };
-    parent.postMessage(msg, '*');
-    // 兼容部分宿主的直投方式
-    if (parent !== window) { try { parent.postMessage(payload, '*'); } catch (e) {} }
+    // MasterGo 用 raw postMessage，不做 pluginMessage 包装
+    // （官方开发指南示例即 parent.postMessage({ count: n }, '*')）
+    parent.postMessage(payload, '*');
   }
 
   function busy(on) {

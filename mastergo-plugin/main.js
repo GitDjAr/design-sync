@@ -353,6 +353,7 @@ async function run(scope, includeHidden) {
 }
 
 api.ui.onmessage = async (msg) => {
+  // MasterGo 传的是 raw object；兼容 Figma 的 { pluginMessage } 包装
   const m = msg && (msg.pluginMessage || msg);
   if (!m || !m.type) return;
   if (m.type === 'run') {
